@@ -1,0 +1,65 @@
+:root {
+  color: #fdf6ec;
+  background:
+    radial-gradient(circle at top, rgba(255, 212, 96, 0.22), transparent 36%),
+    radial-gradient(circle at bottom left, rgba(255, 92, 92, 0.18), transparent 38%),
+    linear-gradient(160deg, #08121f 0%, #10213f 55%, #172f57 100%);
+  font-family: 'Nunito', 'Segoe UI', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+body {
+  min-height: 100svh;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+#app {
+  width: 100vw;
+  height: 100svh;
+  position: relative;
+  overflow: hidden;
+}
+
+#app::before,
+#app::after {
+  content: '';
+  position: absolute;
+  inset: auto;
+  width: 32vmax;
+  height: 32vmax;
+  border-radius: 50%;
+  filter: blur(46px);
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+#app::before {
+  top: -12vmax;
+  right: -10vmax;
+  background: rgba(255, 178, 79, 0.18);
+}
+
+#app::after {
+  bottom: -14vmax;
+  left: -11vmax;
+  background: rgba(91, 194, 255, 0.16);
+}
+
+canvas {
+  display: block;
+}

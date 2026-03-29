@@ -1,0 +1,56 @@
+name: Build Unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-cloud-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-ios:
+    name: Build unsigned IPA
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync Capacitor iOS project
+        run: npm run ios:sync
+
+      - name: Build unsigned archive and IPA
+        id: package
+        shell: bash
+        run: ./scripts/package-unsigned-ipa.sh
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: quack-quake-unsigned-ipa
+          path: ${{ steps.package.outputs.ipa_path }}
+          retention-days: 5
+
+      - name: Upload xcarchive
+        uses: actions/upload-artifact@v4
+        with:
+          name: quack-quake-xcarchive
+          path: ${{ steps.package.outputs.archive_path }}
+          retention-days: 5
