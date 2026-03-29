@@ -19,7 +19,7 @@ import {
 import { LEVELS } from '../levels';
 import { loadProgress, recordLevelResult } from '../storage';
 import type { LevelBlock, LevelConfig, LevelTarget, LevelTnt, MaterialName, ProgressState } from '../types';
-import { createButton, createPanel, starsLabel } from '../ui';
+import { createButton, createPanel, createStatChip, starsLabel } from '../ui';
 
 interface Actor {
   id: string;
@@ -93,7 +93,6 @@ export class GameScene extends Phaser.Scene {
     this.spawnDuck();
     this.updateHud();
     this.updateSlingshotVisuals();
-    this.inputUnlockedAt = this.time.now + 250;
 
     this.input.on('pointerdown', this.handlePointerDown, this);
     this.input.on('pointermove', this.handlePointerMove, this);
@@ -140,7 +139,7 @@ export class GameScene extends Phaser.Scene {
 
     const accents = this.add.graphics();
     accents.fillStyle(hexColor(this.level.accent), 0.12);
-    accents.fillCircle(1030, 128, 220);
+    accents.fillCircle(1030, 110, 240);
     accents.fillStyle(0xffffff, 0.07);
 
     for (let index = 0; index < 18; index += 1) {
@@ -153,11 +152,13 @@ export class GameScene extends Phaser.Scene {
 
     const skyline = this.add.graphics();
     skyline.fillStyle(0x112447, 0.34);
-    skyline.fillRect(0, 400, GAME_WIDTH, 160);
+    skyline.fillRect(0, 392, GAME_WIDTH, 168);
     skyline.fillStyle(0x0c1932, 1);
     skyline.fillRoundedRect(0, 640, GAME_WIDTH, 90, 0);
     skyline.fillStyle(0x204d71, 1);
     skyline.fillRoundedRect(0, 640, GAME_WIDTH, 18, 0);
+    skyline.fillStyle(0xffffff, 0.05);
+    skyline.fillEllipse(986, 616, 320, 46);
 
     const slingshot = this.add.graphics();
     slingshot.fillStyle(COLORS.woodDark, 1);
@@ -168,48 +169,58 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    this.add.text(46, 34, `Level ${this.level.id}: ${this.level.name}`, {
-      fontFamily: FONT_STACKS.title,
-      fontSize: '34px',
-      color: '#fff0bf',
-    });
+    createPanel(this, 640, 118, 1200, 94, COLORS.panel, 0.84).setDepth(25);
 
-    this.add.text(48, 84, this.level.subtitle, {
+    this.add.text(56, 88, `Level ${this.level.id}: ${this.level.name}`, {
+      fontFamily: FONT_STACKS.title,
+      fontSize: '30px',
+      color: '#fff0bf',
+    }).setDepth(26);
+
+    this.add.text(58, 126, this.level.subtitle, {
       fontFamily: FONT_STACKS.body,
-      fontSize: '20px',
+      fontSize: '18px',
       color: '#d7ebff',
       fontStyle: '700',
-    });
+    }).setDepth(26);
 
-    this.shotsText = this.add.text(48, 668, '', {
+    const shotsChip = createStatChip(this, 672, 118, 132, 'ENTEN', '');
+    const targetsChip = createStatChip(this, 822, 118, 138, 'TOASTER', '');
+    const bestChip = createStatChip(this, 998, 118, 180, 'BESTE RUNDE', '');
+
+    shotsChip.setDepth(26);
+    targetsChip.setDepth(26);
+    bestChip.setDepth(26);
+
+    this.shotsText = shotsChip.getData('valueText') as Phaser.GameObjects.Text;
+    this.targetsText = targetsChip.getData('valueText') as Phaser.GameObjects.Text;
+    this.bestText = bestChip.getData('valueText') as Phaser.GameObjects.Text;
+
+    createPanel(this, 214, 198, 278, 68, COLORS.panelSoft, 0.7).setDepth(18);
+    this.add.text(214, 186, 'Touch-Steuerung', {
       fontFamily: FONT_STACKS.body,
-      fontSize: '24px',
-      color: '#fff8de',
+      fontSize: '15px',
+      color: '#9dd7ff',
       fontStyle: '800',
-    });
-
-    this.targetsText = this.add.text(286, 668, '', {
+      align: 'center',
+    }).setOrigin(0.5).setDepth(19);
+    this.add.text(214, 210, 'Ente antippen, nach hinten ziehen,\nloslassen und Turme zerlegen.', {
       fontFamily: FONT_STACKS.body,
-      fontSize: '24px',
-      color: '#fff8de',
-      fontStyle: '800',
-    });
-
-    this.bestText = this.add.text(520, 668, '', {
-      fontFamily: FONT_STACKS.body,
-      fontSize: '22px',
-      color: '#b5dfff',
-      fontStyle: '700',
-    });
+      fontSize: '16px',
+      color: '#eef7ff',
+      align: 'center',
+      lineSpacing: 4,
+    }).setOrigin(0.5).setDepth(19);
 
     createButton(this, {
-      x: 1040,
-      y: 60,
-      width: 112,
-      height: 54,
+      x: 1126,
+      y: 118,
+      width: 98,
+      height: 52,
       label: 'Neu',
       fill: COLORS.panelSoft,
       stroke: COLORS.sky,
+      hitPadding: 14,
       onPress: () => {
         jukebox.playBounce();
         this.scene.restart({ levelIndex: this.levelIndex });
@@ -217,13 +228,14 @@ export class GameScene extends Phaser.Scene {
     }).setDepth(30);
 
     createButton(this, {
-      x: 1170,
-      y: 60,
-      width: 112,
-      height: 54,
+      x: 1234,
+      y: 118,
+      width: 88,
+      height: 52,
       label: 'Menu',
       fill: 0x0f213e,
       stroke: 0x99caef,
+      hitPadding: 14,
       onPress: () => {
         jukebox.playBounce();
         this.scene.start(SCENE_KEYS.menu);
@@ -342,6 +354,7 @@ export class GameScene extends Phaser.Scene {
     this.duck.setData('kind', 'duck');
     this.state = 'ready';
     this.duckSettledAt = undefined;
+    this.inputUnlockedAt = this.time.now + 200;
     this.updateHud();
   }
 
@@ -797,9 +810,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateHud(): void {
-    this.shotsText?.setText(`Enten ${this.shotsRemaining}`);
-    this.targetsText?.setText(`Toaster ${this.targetsRemaining}`);
-    this.bestText?.setText(`Beste Runde ${starsLabel(this.progress.bestStars[this.levelIndex] ?? 0)}`);
+    this.shotsText?.setText(`${this.shotsRemaining}`);
+    this.targetsText?.setText(`${this.targetsRemaining}`);
+    this.bestText?.setText(`${starsLabel(this.progress.bestStars[this.levelIndex] ?? 0)}`);
   }
 
   private burst(x: number, y: number, color: number, count: number, spread: number): void {
@@ -853,9 +866,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private cleanupScene(): void {
-    this.input.off('pointerdown', this.handlePointerDown, this);
-    this.input.off('pointermove', this.handlePointerMove, this);
-    this.input.off('pointerup', this.handlePointerUp, this);
-    this.matter.world.off('collisionstart', this.handleCollision, this);
+    this.input?.off('pointerdown', this.handlePointerDown, this);
+    this.input?.off('pointermove', this.handlePointerMove, this);
+    this.input?.off('pointerup', this.handlePointerUp, this);
+    this.matter?.world?.off('collisionstart', this.handleCollision, this);
   }
 }

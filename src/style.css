@@ -20,6 +20,10 @@ body {
   margin: 0;
   min-height: 100%;
   overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(255, 212, 96, 0.22), transparent 36%),
+    radial-gradient(circle at bottom left, rgba(255, 92, 92, 0.18), transparent 38%),
+    linear-gradient(160deg, #08121f 0%, #10213f 55%, #172f57 100%);
 }
 
 body {
@@ -35,26 +39,47 @@ body {
   overflow: hidden;
 }
 
-#app::before,
-#app::after {
+#game-shell {
+  position: absolute;
+  inset: 0;
+  padding:
+    max(10px, env(safe-area-inset-top))
+    max(10px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom))
+    max(10px, env(safe-area-inset-left));
+  overflow: hidden;
+}
+
+#game-root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 28px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 18px 60px rgba(2, 9, 18, 0.38);
+}
+
+#game-root::before,
+#game-root::after {
   content: '';
   position: absolute;
-  inset: auto;
   width: 32vmax;
   height: 32vmax;
   border-radius: 50%;
   filter: blur(46px);
   opacity: 0.42;
   pointer-events: none;
+  z-index: 0;
 }
 
-#app::before {
+#game-root::before {
   top: -12vmax;
   right: -10vmax;
   background: rgba(255, 178, 79, 0.18);
 }
 
-#app::after {
+#game-root::after {
   bottom: -14vmax;
   left: -11vmax;
   background: rgba(91, 194, 255, 0.16);
@@ -62,4 +87,93 @@ body {
 
 canvas {
   display: block;
+}
+
+#rotate-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 11, 22, 0.84);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+  z-index: 10;
+}
+
+#rotate-overlay[data-active='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.rotate-card {
+  width: min(88vw, 360px);
+  padding: 28px 24px;
+  border-radius: 26px;
+  background: linear-gradient(160deg, rgba(19, 40, 77, 0.96), rgba(11, 26, 52, 0.96));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09),
+    0 20px 46px rgba(0, 0, 0, 0.34);
+  text-align: center;
+}
+
+.rotate-card h1 {
+  margin: 0 0 12px;
+  font-family: 'Bungee', 'Arial Black', sans-serif;
+  font-size: 28px;
+  line-height: 1.15;
+  color: #fff2c4;
+}
+
+.rotate-card p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.45;
+  color: #d7ebff;
+}
+
+.rotate-phone {
+  width: 72px;
+  height: 44px;
+  margin: 0 auto 18px;
+  border-radius: 14px;
+  border: 3px solid rgba(255, 248, 222, 0.92);
+  position: relative;
+  transform: rotate(-20deg);
+  box-shadow: inset 0 0 0 1px rgba(255, 248, 222, 0.12);
+}
+
+.rotate-phone::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -12px;
+  width: 8px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 999px;
+  background: rgba(255, 248, 222, 0.92);
+}
+
+@media (min-aspect-ratio: 1/1) {
+  #rotate-overlay {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  #game-shell {
+    padding:
+      max(0px, env(safe-area-inset-top))
+      max(0px, env(safe-area-inset-right))
+      max(0px, env(safe-area-inset-bottom))
+      max(0px, env(safe-area-inset-left));
+  }
+
+  #game-root {
+    border-radius: 0;
+    box-shadow: none;
+  }
 }
